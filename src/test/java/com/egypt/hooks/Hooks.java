@@ -1,24 +1,19 @@
 package com.egypt.hooks;
 
+import org.openqa.selenium.WebDriver;
+
 import com.egypt.utills.BaseClass;
 
-import io.cucumber.java.Before;
+import io.cucumber.java.After;
 
 public class Hooks extends BaseClass{
 
-	
-//	 @Before
-//	    public void BeforeSteps(Scenario scenario) {
-//	        Hooks.scenario = scenario;
-//	        log4jBaseClass.startTestCase(scenario.getName());
-//
-//	        try {
-//
-//	            WritePerfResults.createFile();
-//	        } catch (Exception ex) {
-//	            System.out.println("Performance Test File Not Created: \n" + ex.getMessage());
-//	            ex.printStackTrace();
-//	        }
-
-//	    }
+	@After
+	public void closeBrowser() {
+		if (driver != null) {
+			WebDriver currentDriver = driver;
+			driver = null;
+			currentDriver.quit();
+		}
+	}
 }

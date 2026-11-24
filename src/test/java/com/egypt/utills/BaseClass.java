@@ -328,10 +328,10 @@ public class BaseClass {
 
 				List<String> li = new ArrayList<String>();
 				s = new Select(ddn);
-				List<WebElement> allSelectedOptions = s.getAllSelectedOptions();
-				for (WebElement webElement : allSelectedOptions) {
+				List<WebElement> allOptions = s.getOptions();
+				for (WebElement webElement : allOptions) {
 					String text = webElement.getText();
-					boolean b = li.add(text);
+					li.add(text);
 
 				}
 				return li;
@@ -401,7 +401,7 @@ public class BaseClass {
 		
 		public WebElement clickableOfElementWait(long sec, WebElement element) {
 			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(sec));
-			return wait.until(ExpectedConditions.visibilityOf(element));
+			return wait.until(ExpectedConditions.elementToBeClickable(element));
 		}
 
 		// 34. FluentWait
@@ -450,8 +450,7 @@ public class BaseClass {
 
 		// 39. clear
 		public void clear(WebElement element) {
-			webdriverWait(10, element);
-			element.click();
+			webdriverWait(10, element).clear();
 		}
 
 		// 40. screenshot
@@ -553,7 +552,7 @@ public class BaseClass {
 			String windowHandle = ParentWindow();
 			Set<String> windowHandles = allWindows();
 			for (String string : windowHandles) {
-				if (!windowHandle.equals(windowHandles)) {
+				if (!windowHandle.equals(string)) {
 					driver.switchTo().window(string);
 					return true;
 				}
