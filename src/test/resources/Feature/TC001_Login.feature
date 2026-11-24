@@ -9,27 +9,27 @@ Feature: Login
 
   @TC02
   Scenario: Valid staff login
-    When User enters valid staff credentials "hospvalue01" and "testlogin001"
+    When User enters valid staff credentials "${staff.username}" and "${staff.password}"
     And User clicks Authorized Login
-    Then User should navigate to staff dashboard "HOSPVALUE01"
+    Then User should navigate to staff dashboard "${staff.displayName}"
 
   @TC03
   Scenario: Valid patient login
     When User selects Patient Portal
-    And User enters valid patient credentials "patientUser" and "patientPass"
+    And User enters valid patient credentials "${patient.username}" and "${patient.password}"
     And User clicks Patient Login
     Then User should navigate to patient dashboard
 
   @TC04
   Scenario: Invalid password
-    When User enters a valid username "hospvalue01" and an incorrect password "WrongPassword@123"
+    When User enters a valid username "${staff.username}" and an incorrect password "${invalid.password}"
     And User clicks the login button
     Then User should see a generic login error
     And User should remain on the login page
 
   @TC05
   Scenario: Invalid username
-    When User enters an unknown username "unknownuser999" and an incorrect password "WrongPassword@123"
+    When User enters an unknown username "${invalid.username}" and an incorrect password "${invalid.password}"
     And User clicks the login button
     Then User should see the same generic login error
     And User should remain on the login page
@@ -41,7 +41,7 @@ Feature: Login
 
   @TC07
   Scenario: Submit with one field empty
-    When User enters only a username "hospvalue01" and clicks the login button
+    When User enters only a username "${staff.username}" and clicks the login button
     Then required-field validation should appear for the password field "Please enter your password"
 
   @TC08
@@ -59,7 +59,7 @@ Feature: Login
 
   @TC10
   Scenario: Submit with only password entered
-    When User enters only a password "testlogin001" and clicks the login button
+    When User enters only a password "${staff.password}" and clicks the login button
     Then required-field validation should appear for the username field "Please enter your username"
 
   @TC11
@@ -115,5 +115,5 @@ Feature: Login
 
   @TC19
   Scenario: Submit login using the Enter key
-    When User enters valid staff credentials "hospvalue01" and "testlogin001" and presses Enter
-    Then User should navigate to staff dashboard "HOSPVALUE01"
+    When User enters valid staff credentials "${staff.username}" and "${staff.password}" and presses Enter
+    Then User should navigate to staff dashboard "${staff.displayName}"

@@ -3,7 +3,10 @@ package com.egypt.step;
 import org.testng.Assert;
 
 import com.egypt.page.LoginPage;
+import static com.egypt.utills.ConfigReader.resolve;
+
 import com.egypt.utills.BaseClass;
+import com.egypt.utills.ConfigReader;
 
 import io.cucumber.java.en.*;
 
@@ -18,7 +21,8 @@ public class TC001_Login_StepDefination extends BaseClass {
 	public void user_launches_the_application_login_page() {
 		browserLaunch();
 		maximizeWindow();
-		enterApplnUrl("http://84.12.176.209:8080/ehb-QA");
+		implicitlyWait(ConfigReader.getInt("wait.implicit"));
+		enterApplnUrl(ConfigReader.get("app.url"));
 		loginPage = new LoginPage(driver);
 	}
 
@@ -31,7 +35,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters valid staff credentials {string} and {string}")
 	public void user_enters_valid_staff_credentials_and(String user, String pass) throws InterruptedException {
 		loginPage = new LoginPage(driver);
-		loginPage.userNameAndPass(user, pass);
+		loginPage.userNameAndPass(resolve(user), resolve(pass));
 	}
 
 	@When("User clicks Authorized Login")
@@ -43,7 +47,8 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@Then("User should navigate to staff dashboard {string}")
 	public void user_should_navigate_to_staff_dashboard(String expectedUser) {
 		loginPage = new LoginPage(driver);
-		Assert.assertEquals(loginPage.suicessMessage(), expectedUser);
+		String expected = resolve(expectedUser);
+		Assert.assertEquals(loginPage.suicessMessage(expected), expected);
 	}
 
 	@When("User selects Patient Portal")
@@ -55,7 +60,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters valid patient credentials {string} and {string}")
 	public void user_enters_valid_patient_credentials_and(String user, String pass) throws InterruptedException {
 		loginPage = new LoginPage(driver);
-		loginPage.userNameAndPass(user, pass);
+		loginPage.userNameAndPass(resolve(user), resolve(pass));
 	}
 
 	@When("User clicks Patient Login")
@@ -73,13 +78,13 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters a valid username {string} and an incorrect password {string}")
 	public void user_enters_a_valid_username_and_an_incorrect_password(String user, String pass) throws InterruptedException {
 		loginPage = new LoginPage(driver);
-		loginPage.userNameAndPass(user, pass);
+		loginPage.userNameAndPass(resolve(user), resolve(pass));
 	}
 
 	@When("User enters an unknown username {string} and an incorrect password {string}")
 	public void user_enters_an_unknown_username_and_an_incorrect_password(String user, String pass) throws InterruptedException {
 		loginPage = new LoginPage(driver);
-		loginPage.userNameAndPass(user, pass);
+		loginPage.userNameAndPass(resolve(user), resolve(pass));
 	}
 
 	@When("User clicks the login button")
@@ -135,7 +140,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters only a username {string} and clicks the login button")
 	public void user_enters_only_a_username_and_clicks_the_login_button(String user) {
 		loginPage = new LoginPage(driver);
-		loginPage.enterUsername(user);
+		loginPage.enterUsername(resolve(user));
 		loginPage.clickBtn();
 	}
 
@@ -148,7 +153,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters only a password {string} and clicks the login button")
 	public void user_enters_only_a_password_and_clicks_the_login_button(String pass) {
 		loginPage = new LoginPage(driver);
-		loginPage.enterPassword(pass);
+		loginPage.enterPassword(resolve(pass));
 		loginPage.clickBtn();
 	}
 
@@ -161,7 +166,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters a password {string}")
 	public void user_enters_a_password(String pass) {
 		loginPage = new LoginPage(driver);
-		loginPage.enterPassword(pass);
+		loginPage.enterPassword(resolve(pass));
 	}
 
 	@When("User clicks the password visibility icon")
@@ -278,7 +283,7 @@ public class TC001_Login_StepDefination extends BaseClass {
 	@When("User enters valid staff credentials {string} and {string} and presses Enter")
 	public void user_enters_valid_staff_credentials_and_and_presses_enter(String user, String pass) {
 		loginPage = new LoginPage(driver);
-		loginPage.enterCredentialsAndPressEnter(user, pass);
+		loginPage.enterCredentialsAndPressEnter(resolve(user), resolve(pass));
 	}
 
 }

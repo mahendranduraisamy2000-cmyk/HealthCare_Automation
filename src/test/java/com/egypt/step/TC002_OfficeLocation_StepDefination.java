@@ -9,6 +9,7 @@ import org.testng.Assert;
 
 import com.egypt.page.OfficeLocationPage;
 import com.egypt.utills.BaseClass;
+import com.egypt.utills.ConfigReader;
 
 import io.cucumber.java.en.*;
 
@@ -32,16 +33,30 @@ public class TC002_OfficeLocation_StepDefination extends BaseClass {
 	private Map<String, String> validData(String facilityName) {
 		Map<String, String> data = new HashMap<>();
 		data.put("facilityName", facilityName);
-		data.put("firstName", "John");
-		data.put("lastName", "Smith");
-		data.put("address1", "10 Main Street");
-		data.put("city", "Cairo");
-		data.put("email", "john.smith@example.com");
+		data.put("firstName", ConfigReader.get("location.firstName"));
+		data.put("lastName", ConfigReader.get("location.lastName"));
+		data.put("address1", ConfigReader.get("location.address1"));
+		data.put("city", ConfigReader.get("location.city"));
+		data.put("governorate", ConfigReader.get("location.governorate"));
+		data.put("dayPhone", ConfigReader.get("location.dayPhone"));
+		data.put("email", ConfigReader.get("location.email"));
 		return data;
 	}
 
+	/** Valid data for every mandatory field except the given ones (keeps values already typed by the user). */
+	private Map<String, String> validDataExcept(String... skipKeys) {
+		Map<String, String> data = validData("Automation Clinic " + System.currentTimeMillis());
+		for (String key : skipKeys) {
+			data.remove(key);
+		}
+		return data;
+	}
+
+	/** Table data from the feature file + default Day Phone / Governorate (mandatory in the app). */
 	private void enterData(Map<String, String> data) {
 		enteredData = new HashMap<>(data);
+		enteredData.putIfAbsent("dayPhone", ConfigReader.get("location.dayPhone"));
+		enteredData.putIfAbsent("governorate", ConfigReader.get("location.governorate"));
 		page().enterLocationDetails(enteredData);
 	}
 
@@ -117,17 +132,23 @@ public class TC002_OfficeLocation_StepDefination extends BaseClass {
 
 	@When("User completes all other mandatory fields with valid data")
 	public void user_completes_all_other_mandatory_fields_with_valid_data() {
-		enterData(validData("Automation Clinic " + System.currentTimeMillis()));
+		// Day Phone was already entered by the previous step - do not overwrite it
+		page().enterLocationDetails(validDataExcept("dayPhone"));
 	}
 
 	@When("User completes remaining mandatory fields with valid data")
 	public void user_completes_remaining_mandatory_fields_with_valid_data() {
-		// Text fields already filled with spaces; email is the remaining mandatory field
-		page().enterEmail("john.smith@example.com");
+		// Text fields already contain spaces; fill only the non-text mandatory fields
+		Map<String, String> data = new HashMap<>();
+		data.put("dayPhone", ConfigReader.get("location.dayPhone"));
+		data.put("governorate", ConfigReader.get("location.governorate"));
+		data.put("email", ConfigReader.get("location.email"));
+		page().enterLocationDetails(data);
 	}
 
 	@When("User completes all mandatory fields with valid data")
 	public void user_completes_all_mandatory_fields_with_valid_data() {
+		// Discount was already entered by the previous step - only mandatory fields are filled
 		enterData(validData("Automation Clinic " + System.currentTimeMillis()));
 	}
 
@@ -139,8 +160,8 @@ public class TC002_OfficeLocation_StepDefination extends BaseClass {
 		data.put("lastName", "   ");
 		data.put("address1", "   ");
 		data.put("city", "   ");
-		data.put("email", "");
-		enterData(data);
+		enteredData = data;
+		page().enterLocationDetails(data);
 	}
 
 	@When("User leaves optional fields blank")
@@ -403,5 +424,109 @@ public class TC002_OfficeLocation_StepDefination extends BaseClass {
 		int after = searchCount(facilityName);
 		Assert.assertTrue(after - Math.max(recordCountBefore, 0) <= 1,
 				"Duplicate submission created more than one record for: " + facilityName);
+	}
+
+	// ==================== Additional negative / boundary scenarios ====================
+
+	@When("User enters valid data in all mandatory fields except {string}")
+	public void user_enters_valid_data_in_all_mandatory_fields_except(String field) {
+		Map<String, String> data = validDataExcept(field);
+		enteredData = data;
+		page().enterLocationDetails(data);
+	}
+
+	@When("User enters Email {string}")
+	public void user_enters_email(String value) {
+		page().enterEmail(value);
+	}
+
+	@When("User enters Postal Code {string}")
+	public void user_enters_postal_code(String value) {
+		page().enterPostalCode(value);
+	}
+
+	@When("User enters Facility Name value {string}")
+	public void user_enters_facility_name_value(String value) {
+		page().enterFacilityName(value);
+	}
+
+	@When("User enters {int} characters in {string}")
+	public void user_enters_characters_in(int length, String field) {
+		String chars = field.equals("postalCode") ? "1234567890" : "ABCDEFGHIJ";
+		StringBuilder value = new StringBuilder();
+		while (value.length() < length) {
+			value.append(chars);
+		}
+		page().enterField(field, value.substring(0, length));
+	}
+
+	@When("User clicks Clear")
+	public void user_clicks_clear() {
+		page().clickClear();
+	}
+
+	@When("User clicks Back to Search")
+	public void user_clicks_back_to_search() {
+		page().clickBackToSearch();
+	}
+
+	@Then("Field validation should be displayed for {string}")
+	public void field_validation_should_be_displayed_for(String field) {
+		Assert.assertTrue(page().isFieldErrorDisplayed(field), "No validation message displayed for field: " + field);
+	}
+
+	@Then("No validation error should be displayed for {string}")
+	public void no_validation_error_should_be_displayed_for(String field) {
+		Assert.assertFalse(page().isFieldErrorDisplayed(field),
+				"Unexpected validation for " + field + ": " + page().getFieldError(field));
+	}
+
+	@Then("{string} should contain at most {int} characters")
+	public void should_contain_at_most_characters(String field, int maxLength) {
+		int actual = page().getFieldValue(field).length();
+		Assert.assertTrue(actual <= maxLength,
+				field + " accepted " + actual + " characters, maximum allowed is " + maxLength);
+	}
+
+	@Then("Postal Code should be rejected")
+	public void postal_code_should_be_rejected() {
+		String value = page().getFieldValue("postalCode");
+		boolean blockedByInput = !value.matches(".*\\D.*");
+		Assert.assertTrue(blockedByInput || page().isFieldErrorDisplayed("postalCode"),
+				"Non-numeric Postal Code was accepted: " + value);
+	}
+
+	@Then("All mandatory text fields should be empty")
+	public void all_mandatory_text_fields_should_be_empty() {
+		for (String field : List.of("facilityName", "firstName", "lastName", "address1", "city", "dayPhone")) {
+			Assert.assertEquals(page().getFieldValue(field), "", field + " was not cleared");
+		}
+		Assert.assertEquals(page().getSelectedGovernorate(), "", "Governorate was not cleared");
+	}
+
+	@Then("{string} field should be read-only")
+	public void field_should_be_read_only(String field) {
+		Assert.assertTrue(page().isReadOnly(field), field + " field is editable");
+	}
+
+	@Then("Office Location search page should be displayed")
+	public void office_location_search_page_should_be_displayed() {
+		Assert.assertTrue(page().isSearchPageDisplayed(), "Search page not displayed. URL: " + getApplnUrl());
+	}
+
+	@Then("No browser alert should be triggered")
+	public void no_browser_alert_should_be_triggered() {
+		boolean alert = page().isAlertPresent();
+		if (alert) {
+			alertDriverAccept();
+		}
+		Assert.assertFalse(alert, "Script in Facility Name was executed (alert shown)");
+	}
+
+	@Then("Facility Name input should be either rejected or shown as plain text {string}")
+	public void facility_name_input_should_be_either_rejected_or_shown_as_plain_text(String value) {
+		boolean rejected = page().isFieldErrorDisplayed("facilityName");
+		boolean shownAsText = page().getPageText().contains(value) || page().getFieldValue("facilityName").equals(value);
+		Assert.assertTrue(rejected || shownAsText, "Script input was neither rejected nor displayed as plain text");
 	}
 }

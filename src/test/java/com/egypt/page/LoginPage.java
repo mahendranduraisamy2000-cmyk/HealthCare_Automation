@@ -234,4 +234,13 @@ public class LoginPage extends BaseClass {
         webdriverWait(20, desnoardMessage1);
         return elementGetText(desnoardMessage1);
     }
+
+    /** Waits (wait.login seconds from config.properties) for the logged-in user name on the dashboard. */
+    public String suicessMessage(String expectedUser) {
+        WebElement dashboardUser = new org.openqa.selenium.support.ui.WebDriverWait(driver,
+                java.time.Duration.ofSeconds(com.egypt.utills.ConfigReader.getInt("wait.login")))
+                .until(org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated(
+                        By.xpath("//span[text()='" + expectedUser + "']")));
+        return elementGetText(dashboardUser);
+    }
 }

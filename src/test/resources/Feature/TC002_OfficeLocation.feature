@@ -6,9 +6,9 @@ Feature: Office Location Management
 
   Background:
     Given User launches the application login page
-    When User enters valid staff credentials "hospvalue01" and "testlogin001"
+    When User enters valid staff credentials "${staff.username}" and "${staff.password}"
     And User clicks Authorized Login
-    Then User should navigate to staff dashboard "HOSPVALUE01"
+    Then User should navigate to staff dashboard "${staff.displayName}"
 
   @Critical @ATC001
   Scenario: Validate mandatory fields
@@ -228,3 +228,123 @@ Feature: Office Location Management
     Examples:
       | facilityName         | firstName | lastName | address1       | city  | email                  |
       | OptionalBlank Clinic | Mary      | Jones    | 30 Main Street | Cairo | mary.jones@example.com |
+
+  # ==================== Additional negative / boundary scenarios ====================
+
+  @Critical @Negative @ATC018
+  Scenario Outline: Each mandatory field is validated individually
+    When User opens Create Location page
+    And User enters valid data in all mandatory fields except "<field>"
+    And User clicks Continue
+    Then Field validation should be displayed for "<field>"
+    And User should remain on Create Location page
+
+    Examples:
+      | field        |
+      | facilityName |
+      | firstName    |
+      | lastName     |
+      | address1     |
+      | city         |
+      | dayPhone     |
+      | governorate  |
+
+  @High @Negative @ATC019
+  Scenario Outline: Email address format validation
+    When User opens Create Location page
+    And User completes all mandatory fields with valid data
+    And User enters Email "<email>"
+    And User clicks Continue
+    Then Field validation should be displayed for "email"
+
+    Examples:
+      | email               |
+      | john@               |
+      | @example.com        |
+      | john example.com    |
+      | john@@example.com   |
+      | john@example        |
+
+  @High @Boundary @ATC020
+  Scenario Outline: Text fields do not accept more than the allowed length
+    When User opens Create Location page
+    And User enters <length> characters in "<field>"
+    Then "<field>" should contain at most <maxLength> characters
+
+    Examples:
+      | field        | length | maxLength |
+      | facilityName | 40     | 32        |
+      | address1     | 70     | 64        |
+      | city         | 20     | 16        |
+      | postalCode   | 8      | 5         |
+
+  @High @Negative @ATC021
+  Scenario Outline: Postal Code accepts only digits
+    When User opens Create Location page
+    And User completes all mandatory fields with valid data
+    And User enters Postal Code "<postalCode>"
+    And User clicks Continue
+    Then Postal Code should be rejected
+
+    Examples:
+      | postalCode |
+      | ABCDE      |
+      | 12@#5      |
+
+  @High @Negative @ATC022
+  Scenario Outline: Discount fields reject non-numeric values
+    When User opens Create Location page
+    And User enters discount "<discount>" in the "<discountField>" field
+    And User completes all mandatory fields with valid data
+    And User clicks Continue
+    Then Discount validation should be displayed
+
+    Examples:
+      | discountField     | discount |
+      | Local Medicine    | abc      |
+      | Imported Medicine | 10%      |
+
+  @Medium @Boundary @ATC023
+  Scenario Outline: Discount boundary values 0 and 100 are accepted
+    When User opens Create Location page
+    And User enters discount "<discount>" in the "<discountField>" field
+    And User completes all mandatory fields with valid data
+    And User clicks Continue
+    Then No validation error should be displayed for "<discountKey>"
+
+    Examples:
+      | discountField     | discountKey              | discount |
+      | Local Medicine    | localMedicineDiscount    | 0        |
+      | Imported Medicine | importedMedicineDiscount | 100      |
+
+  @Medium @ATC024
+  Scenario: Clear button resets the entered location details
+    When User opens Create Location page
+    And User completes all mandatory fields with valid data
+    And User clicks Clear
+    Then All mandatory text fields should be empty
+
+  @Medium @ATC025
+  Scenario: Company Name is read-only on Create Location page
+    When User opens Create Location page
+    Then "companyName" field should be read-only
+
+  @Medium @ATC026
+  Scenario: Back to Search navigates to the Office Location search page
+    When User opens Create Location page
+    And User clicks Back to Search
+    Then Office Location search page should be displayed
+
+  @High @Negative @Security @ATC027
+  Scenario Outline: Script / HTML input in Facility Name is not executed
+    When User opens Create Location page
+    And User completes all mandatory fields with valid data
+    And User enters Facility Name value "<value>"
+    And User clicks Continue
+    Then No browser alert should be triggered
+    And Facility Name input should be either rejected or shown as plain text "<value>"
+
+    Examples:
+      | value                         |
+      | <script>alert(1)</script>     |
+      | <img src=x onerror=alert(1)>  |

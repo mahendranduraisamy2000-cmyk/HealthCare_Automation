@@ -10,6 +10,7 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 
 import com.egypt.utills.BaseClass;
+import com.egypt.utills.ConfigReader;
 
 import io.cucumber.java.After;
 import io.cucumber.java.AfterStep;
@@ -26,10 +27,10 @@ public class Hooks extends BaseClass {
 		Files.createDirectories(ALLURE_RESULTS);
 
 		Files.writeString(ALLURE_RESULTS.resolve("environment.properties"),
-				"Application=EgyptHealthBook\n"
-				+ "Environment=QA\n"
-				+ "URL=http://158.101.230.16:8484/ehb-QA/login\n"
-				+ "Browser=Chrome\n"
+				"Application=" + ConfigReader.get("app.name") + "\n"
+				+ "Environment=" + ConfigReader.get("app.environment") + "\n"
+				+ "URL=" + ConfigReader.get("app.url") + "\n"
+				+ "Browser=" + ConfigReader.get("browser") + "\n"
 				+ "OS=" + System.getProperty("os.name") + "\n"
 				+ "Java=" + System.getProperty("java.version") + "\n");
 
