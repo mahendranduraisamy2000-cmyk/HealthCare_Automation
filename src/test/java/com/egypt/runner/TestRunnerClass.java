@@ -6,7 +6,7 @@ import io.cucumber.testng.CucumberOptions;
 
 @CucumberOptions(
     features = "src/test/resources/Feature/TC001_Login.feature",
-    glue = "com.egypt.step",
+    glue = "com.egypt",
 
     tags = "@TC001",
 
