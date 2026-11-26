@@ -55,7 +55,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      | firstName | lastName | address1       | city  | email                  |
-      | Automation Clinic | John      | Smith    | 10 Main Street | Cairo | john.smith@example.com |
+      | ${random.facilityName} | ${random.firstName} | ${random.lastName} | ${random.address1} | Cairo | ${random.email} |
 
   @High @ATC004
   Scenario: Verify Back to Edit retains entered details
@@ -75,11 +75,12 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      |
-      | Automation Clinic |
+      | ${location.existingFacility} |
 
   @Critical @ATC006
   Scenario Outline: Modify an existing Office Location
-    When User searches for Facility Name "<facilityName>"
+    When User creates a new Office Location
+    And User searches for Facility Name "<facilityName>"
     And User opens the matching location for modification
     And User updates the City to "<updatedCity>"
     And User saves the location changes
@@ -87,7 +88,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      | updatedCity |
-      | Automation Clinic | Giza        |
+      | ${created.facilityName} | Giza        |
 
   @High @ATC007
   Scenario Outline: Search using multiple criteria
@@ -100,7 +101,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      | city  | governorate |
-      | Automation Clinic | Cairo | Cairo       |
+      | ${location.existingFacility} | Cairo | Cairo       |
 
   @High @ATC008
   Scenario Outline: Search when no matching location exists
@@ -121,7 +122,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      |
-      | Automation Clinic |
+      | ${location.existingFacility} |
 
   @High @ATC010
   Scenario Outline: Verify saved location details across tabs
@@ -134,7 +135,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      |
-      | Automation Clinic |
+      | ${location.existingFacility} |
 
   @Critical @ATC011
   Scenario Outline: Prevent duplicate facility creation
@@ -153,7 +154,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName      | firstName | lastName | address1       | city  | email                |
-      | Automation Clinic | Jane      | Doe      | 20 Main Street | Cairo | jane.doe@example.com |
+      | ${location.existingFacility} | ${random.firstName} | ${random.lastName} | ${random.address1} | Cairo | ${random.email} |
 
   @High @ATC012
   Scenario Outline: Validate invalid phone number
@@ -208,7 +209,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName            |
-      | DoubleSubmit Clinic 001 |
+      | ${random.facilityName} |
 
   @High @ATC017
   Scenario Outline: Create location with optional fields left blank
@@ -227,7 +228,7 @@ Feature: Office Location Management
 
     Examples:
       | facilityName         | firstName | lastName | address1       | city  | email                  |
-      | OptionalBlank Clinic | Mary      | Jones    | 30 Main Street | Cairo | mary.jones@example.com |
+      | ${random.facilityName} | ${random.firstName} | ${random.lastName} | ${random.address1} | Cairo | ${random.email} |
 
   # ==================== Additional negative / boundary scenarios ====================
 
@@ -297,7 +298,7 @@ Feature: Office Location Management
     And User enters discount "<discount>" in the "<discountField>" field
     And User completes all mandatory fields with valid data
     And User clicks Continue
-    Then Discount validation should be displayed
+    Then Non-numeric discount should be rejected
 
     Examples:
       | discountField     | discount |
