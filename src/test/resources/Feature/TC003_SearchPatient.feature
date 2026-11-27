@@ -34,7 +34,7 @@ Feature: Search Patient - High Priority Automation
 
     Examples:
       | nationalId         | patientName  |
-      | 3-433423-42-3545-4 |  karthi k  |
+      | 3-433423-42-3545-4 | karthi reddy |
      
 
   @TC004
